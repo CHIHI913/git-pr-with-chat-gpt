@@ -1,0 +1,30 @@
+# OS固有のファイル
+.DS_Store
+Thumbs.db
+
+# ログファイル
+*.log
+
+# 一時ファイル
+*.tmp
+*.swp
+
+# ビルドディレクトリ
+/dist/
+/build/
+
+# Node.js
+/node_modules/
+
+# Python
+__pycache__/
+*.pyc
+
+# Java
+*.class
+*.jar
+
+# 環境設定ファイル
+.env
+
+.history
