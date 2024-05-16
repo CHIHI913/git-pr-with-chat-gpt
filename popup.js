@@ -78,7 +78,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const prompt = promptTextArea.value;
     const prDiff = codeDiffPre.textContent;
     const fullPrompt = `${prompt}\n\nPR Diff:\n${prDiff}`;
-    chrome.storage.sync.set(
+    chrome.storage.local.set(
       { fullPrompt: fullPrompt, openChatGPT: true },
       function () {
         openChatGPT();

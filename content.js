@@ -1,4 +1,4 @@
-chrome.storage.sync.get(["fullPrompt", "openChatGPT"], function (result) {
+chrome.storage.local.get(["fullPrompt", "openChatGPT"], function (result) {
   if (result.fullPrompt) {
     const fullPrompt = result.fullPrompt;
     const openChatGPT = result.openChatGPT;
@@ -26,6 +26,6 @@ chrome.storage.sync.get(["fullPrompt", "openChatGPT"], function (result) {
         }
       }, 100);
     }
-    chrome.storage.sync.set({ openChatGPT: false });
+    chrome.storage.local.set({ openChatGPT: false });
   }
 });
