@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <title>GitHub PR with ChatGPT</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        width: 500px;
+        padding: 10px;
+        box-sizing: border-box;
+        margin: 0;
+        padding-bottom: 60px;
+      }
+      #executeButton {
+        width: calc(100% - 20px);
+        padding: 8px;
+        margin: 0 10px 10px 0;
+        background: linear-gradient(to right, #d70c18, #ff8336);
+        color: white;
+        border: none;
+        cursor: pointer;
+        font-size: 16px;
+        border-radius: 5px;
+        transition: background-color 0.3s ease;
+        position: fixed;
+        bottom: 10px;
+        left: 10px;
+        z-index: 1000;
+      }
+      #savePromptButton,
+      #deletePromptButton,
+      #saveTokenButton,
+      #deleteTokenButton {
+        width: 100%;
+        padding: 4px;
+        margin-bottom: 10px;
+        background-color: #a3a3a3;
+        color: white;
+        border: none;
+        cursor: pointer;
+        font-size: 12px;
+        border-radius: 5px;
+        transition: background-color 0.3s ease;
+      }
+      #executeButton:hover,
+      #savePromptButton:hover,
+      #deletePromptButton:hover,
+      #saveTokenButton:hover,
+      #deleteTokenButton:hover {
+        background-color: #d70c18;
+      }
+      #buttonContainer {
+        display: flex;
+        gap: 10px;
+      }
+      #savePromptButton,
+      #deletePromptButton,
+      #saveTokenButton,
+      #deleteTokenButton {
+        flex: 1;
+      }
+      textarea {
+        width: 100%;
+        height: 120px;
+        padding: 10px;
+        font-size: 12px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        box-sizing: border-box;
+        margin-bottom: 10px;
+      }
+      input {
+        width: 100%;
+        padding: 10px;
+        font-size: 12px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        box-sizing: border-box;
+        margin-bottom: 10px;
+      }
+      textarea {
+        resize: vertical;
+      }
+      select {
+        width: 100%;
+        margin: 10px 0;
+        padding: 5px;
+        font-size: 12px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        box-sizing: border-box;
+      }
+      pre {
+        background: #f4f4f4;
+        padding: 10px;
+        overflow-x: auto;
+        margin-bottom: 10px;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        border: 1px solid #ccc;
+        font-size: 12px;
+        border-radius: 5px;
+      }
+      .removed {
+        background-color: #ffdddd;
+      }
+      .added {
+        background-color: #ddffdd;
+      }
+      .error-text {
+        color: red;
+        font-weight: bold;
+      }
+      .accordion {
+        cursor: pointer;
+        background-color: #eee;
+        border: none;
+        outline: none;
+        transition: background-color 0.3s ease;
+        padding: 8px;
+        width: 100%;
+        text-align: left;
+        font-size: 15px;
+      }
+      .accordion.active,
+      .accordion:hover {
+        background-color: #ccc;
+      }
+      .panel {
+        padding: 0 10px;
+        display: none;
+        background-color: white;
+        overflow: hidden;
+      }
+      .inline-buttons {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
+      .edit-button {
+        width: 18%;
+        background-color: #a3a3a3;
+        margin-right: 5px;
+        color: white;
+        border: none;
+        cursor: pointer;
+        font-size: 12px;
+        border-radius: 5px;
+        display: inline-flex;
+        transition: background-color 0.3s ease;
+        padding: 4px 8px;
+        align-items: center;
+      }
+      .edit-button i {
+        margin-right: 5px;
+      }
+      .edit-button:hover {
+        background-color: #d70c18;
+      }
+    </style>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+    />
+  </head>
+  <body>
+    <b>プロンプト</b>
+    <textarea id="prompt" placeholder="プロンプトを登録してください"></textarea>
+    <b>保存したプロンプト一覧</b>
+    <select id="savedPrompts"></select>
+    <div id="buttonContainer">
+      <button id="savePromptButton">
+        <i class="fas fa-save"></i> <b>プロンプトを保存</b>
+      </button>
+      <button id="deletePromptButton">
+        <i class="fas fa-trash-alt"></i> <b>プロンプトを削除</b>
+      </button>
+    </div>
+    <b>コード差分</b>
+    <pre id="codeDiff">コードの差分を読み込み中...</pre>
+    <button id="executeButton"><b>ChatGPTを開いてPRを作成する</b></button>
+
+    <!-- トークン編集ボタンとフォーム -->
+    <b>保存したトークン一覧</b>
+    <div class="inline-buttons">
+      <select id="savedTokens"></select>
+      <button id="editTokenButton" class="edit-button">
+        <i class="fas fa-edit"></i> <b>編集</b>
+      </button>
+    </div>
+    <div id="tokenEditForm" class="panel">
+      <input
+        type="text"
+        id="repoName"
+        placeholder="例）https://github.com/owner/repoの場合は「owner/repo 」と記入"
+      />
+      <input
+        type="password"
+        id="githubToken"
+        placeholder="GitHubトークンを入力してください"
+      />
+      <div id="tokenButtonContainer" class="inline-buttons">
+        <button id="saveTokenButton">
+          <i class="fas fa-save"></i> トークンを保存
+        </button>
+        <button id="deleteTokenButton">
+          <i class="fas fa-trash-alt"></i> トークンを削除
+        </button>
+      </div>
+    </div>
+
+    <script src="popup.js"></script>
+  </body>
+</html>
