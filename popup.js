@@ -53,22 +53,29 @@ document.addEventListener("DOMContentLoaded", function () {
       const repoKey = repoMatch ? `${repoMatch[1]}/${repoMatch[2]}` : null;
       const token = repoKey ? githubTokens[repoKey] : null;
 
-      if (token) {
-        chrome.runtime.sendMessage(
-          { action: "getPRDiff", tabUrl: tabUrl },
-          function (response) {
-            if (response && response.prDiff) {
-              const formattedDiff = formatDiff(response.prDiff);
-              codeDiffPre.innerHTML = formattedDiff;
-            } else {
-              codeDiffPre.innerHTML =
-                '<span class="error-text">コードの差分の読み込みに失敗しました。\nGitHubのPRページで実行してください。</span>';
+      if (repoMatch) {
+        const repoKey = `${repoMatch[1]}/${repoMatch[2]}`;
+        const token = githubTokens[repoKey];
+        if (token) {
+          chrome.runtime.sendMessage(
+            { action: "getPRDiff", tabUrl: tabUrl },
+            function (response) {
+              if (response && response.prDiff) {
+                const formattedDiff = formatDiff(response.prDiff);
+                codeDiffPre.innerHTML = formattedDiff;
+              } else {
+                codeDiffPre.innerHTML =
+                  '<span class="error-text">コードの差分の読み込みに失敗しました。</span>';
+              }
             }
-          }
-        );
+          );
+        } else {
+          codeDiffPre.innerHTML =
+            '<span class="error-text">このリポジトリのトークンがありません。トークンを保存してください。</span>';
+        }
       } else {
         codeDiffPre.innerHTML =
-          '<span class="error-text">トークンを保存してください。</span>';
+          '<span class="error-text">PRの画面で実行してください。</span>';
       }
     });
   });
@@ -123,7 +130,7 @@ document.addEventListener("DOMContentLoaded", function () {
     savedPromptsSelect.innerHTML = "";
     prompts.forEach((prompt) => {
       const truncatedPrompt =
-        prompt.length > 15 ? prompt.substring(0, 25) + "…" : prompt;
+        prompt.length > 15 ? prompt.substring(0, 30) + "…" : prompt;
       const option = document.createElement("option");
       option.value = prompt;
       option.textContent = truncatedPrompt;
