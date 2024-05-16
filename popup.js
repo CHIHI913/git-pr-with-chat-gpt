@@ -78,9 +78,12 @@ document.addEventListener("DOMContentLoaded", function () {
     const prompt = promptTextArea.value;
     const prDiff = codeDiffPre.textContent;
     const fullPrompt = `${prompt}\n\nPR Diff:\n${prDiff}`;
-    chrome.storage.sync.set({ fullPrompt: fullPrompt }, function () {
-      openChatGPTWithPrompt(fullPrompt);
-    });
+    chrome.storage.sync.set(
+      { fullPrompt: fullPrompt, openChatGPT: true },
+      function () {
+        openChatGPT();
+      }
+    );
   });
 
   // プロンプトの保存
@@ -131,39 +134,9 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
-  function openChatGPTWithPrompt(fullPrompt) {
+  function openChatGPT() {
     const url = `https://chatgpt.com/?oai-dm=1`;
-    chrome.tabs.create({ url: url }, function (tab) {
-      chrome.scripting.executeScript({
-        target: { tabId: tab.id },
-        func: injectPrompt,
-        args: [fullPrompt],
-      });
-    });
-  }
-
-  function injectPrompt(fullPrompt) {
-    const checkTextarea = setInterval(() => {
-      const textarea = document.querySelector("textarea#prompt-textarea");
-      if (textarea) {
-        textarea.value = fullPrompt;
-        const event = new Event("input", { bubbles: true });
-        textarea.dispatchEvent(event);
-
-        // 送信ボタンを探してクリック
-        const sendButtonCheck = setInterval(() => {
-          const sendButton = document.querySelector(
-            "button.mb-1.mr-1.flex.h-8.w-8.items-center.justify-center.rounded-full.bg-black.text-white"
-          );
-          if (sendButton) {
-            sendButton.click();
-            clearInterval(sendButtonCheck);
-          }
-        }, 100);
-
-        clearInterval(checkTextarea);
-      }
-    }, 100);
+    chrome.tabs.create({ url: url });
   }
 
   function formatDiff(diff) {
