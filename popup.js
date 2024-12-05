@@ -80,17 +80,14 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   });
 
-  // PRの差分とプロンプトを共にChatGPTに送信
+  // PRの差分とプロンプトを共にクリップボードに保存
   executeButton.addEventListener("click", function () {
     const prompt = promptTextArea.value;
     const prDiff = codeDiffPre.textContent;
     const fullPrompt = `${prompt}\n\nPR Diff:\n${prDiff}`;
-    chrome.storage.local.set(
-      { fullPrompt: fullPrompt, openChatGPT: true },
-      function () {
-        openChatGPT();
-      }
-    );
+    navigator.clipboard.writeText(fullPrompt).then(function () {
+      openChatGPT();
+    });
   });
 
   // プロンプトの保存
@@ -142,7 +139,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function openChatGPT() {
-    const url = `https://chatgpt.com/?oai-dm=1`;
+    const url = `https://chatgpt.com/`;
     chrome.tabs.create({ url: url });
   }
 
